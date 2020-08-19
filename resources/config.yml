@@ -1,0 +1,4 @@
+SampleGame:
+  world: TruHasCoodies
+  spawns:
+    player:
