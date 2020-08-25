@@ -1,4 +1,27 @@
 SampleGame:
-  world: TruHasCoodies
+  # The name of the world
+  world: worldname
+  # The Y level for a player to die
+  deathY: 50
+  # The amount of players required for the game to start
+  players: 10
+  # The amount of time for each match (minutes)
+  time: 2
+  # Whether or not the plugin should protect the world
+  protection: yes
+  # Brackets [
+  brackets:
+    # Whether or not brackets should be enabled
+    # If disabled, a winning player is constantly fighting until
+    # They are dead.
+    # enabled: no
+    # Whether or not the losing bracket competes for 3rd place
+    # thirdPlace: yes
+    # How draws are handled (rematch/elimination)
+    # draws: elimination
   spawns:
-    player:
+    # The positions for the players to spawn
+    # This only accepts 2 array elements.
+    players: [{ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0}]
+    # The position for spectators to spawn.
+    spectator: { x: 0, y: 0, z: 0 }

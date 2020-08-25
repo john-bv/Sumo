@@ -4,6 +4,8 @@ namespace Bavfalcon9\Sumo;
 
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerQuitEvent;
+
 
 class EventListener implements Listener
 {
@@ -17,7 +19,7 @@ class EventListener implements Listener
 
     public function onJoin(PlayerJoinEvent $event): void
     {
-        // TODO finish this
+        $event->getPlayer();
     }
 
     public function onQuit(PlayerQuitEvent $event): void

@@ -3,121 +3,73 @@
 namespace Bavfalcon9\Sumo\game;
 
 use pocketmine\Player;
+use Bavfalcon9\Sumo\Main;
 
-abstract class BaseGame
+class BaseGame
 {
-    /** @var Team[] */
-    private $teams;
+    /** @var Main */
+    protected $plugin;
+    /** @var string[] */
+    protected $players;
+    /** @var int */
+    protected $maxPlayers;
     /** @var bool */
     protected $running;
 
-    public function __construct()
+    public function __construct(Main $plugin, int $maxPlayers)
     {
-        $this->teams = [];
+        $this->plugin = $plugin;
+        $this->players = [];
+        $this->maxPlayers = $maxPlayers;
         $this->running = false;
     }
 
-    /**
-     * Adds a player to the game and gives you the team they are on.
-     * @param Player $player
-     * @return Team
-     */
-    public function addPlayer(Player $player): Team
+    public function addPlayer(string $player): void
     {
-        if (!is_null($team = $this->getTeamByPlayer($player))) {
-            return $team;
-        }
-        if ($this->running) {
-            $team = $this->getTeam('Spectator');
-            $team->addPlayer($player);
-            return $team;
-        } else {
-            $team = $this->getRandomTeam();
-            $team->addPlayer($player);
-            return $team;
-        }
+        if (!$this->hasPlayer($player)) return;
+        $this->players[] = $player;
+    }
+
+    public function removePlayer(string $player): void
+    {
+       if (!$this->hasPlayer($player)) return;
+       array_splice($this->players, array_search($player, $this->players));
+    }
+
+    public function hasPlayer(string $player): bool
+    {
+        return isset($this->players[$player]);
+    }
+
+    public function getPlayerCount(): int
+    {
+        return count($this->players);
+    }
+
+    public function getPlayers(): array
+    {
+        return $this->players;
     }
 
     /**
-     * Removes a player from the game and gives you the team they were on.
-     * @param Player $player
-     * @return bool
+     * Gets an array of players as player instances.
+     * @return Player[]
      */
-    public function removePlayer(Player $player): bool
+    public function getOnlinePlayers(): array
     {
-        return (($team = $this->getTeamByPlayer($player))) ? $team->removePlayer($player) : false;
-    }
-
-    /**
-     * Get the Team class for the team that the given player is in.
-     * @param Player|string $player
-     * @return Team|null
-     */
-    public function getTeamByPlayer($player): ?Team
-    {
-        foreach ($this->teams as $team) {
-            if ($team->hasPlayer($player)) {
-                return $team;
+        $players = [];
+        foreach ($this->players as $player) {
+            if (!is_null($ol = $this->plugin->getServer()->getPlayerExact($player))) {
+                $players[] = $ol;
+            } else {
+                $this->removePlayer($player);
             }
         }
-        return null;
+        return $players;
     }
 
-    /**
-     * Adds a team to the game.
-     * @param Team $team
-     * @return bool
-     */
-    public function addTeam(Team $team): bool
+    public function canJoin(): bool
     {
-        if ($this->getTeam($team->getName())) {
-            return false;
-        }
-        $this->teams[] = $team;
-        return true;
+        return count($this->players) >= $this->maxPlayers;
     }
-
-    /**
-     * Remove a team from the game.
-     * @param Team $team
-     * @return bool
-     */
-    public function removeTeam(Team $team): bool
-    {
-        if (is_null($this->getTeam($team->getName()))) {
-            return false;
-        }
-        foreach ($this->teams as $key=>$tm) {
-            if ($tm->getName() === $team->getName()) {
-                array_splice($this->teams, $key, 1);
-                break;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Gets the Team class for the given team name (if any).
-     * @param string $name
-     * @return Team|null
-     */
-    public function getTeam(string $name): ?Team
-    {
-        foreach ($this->teams as $team) {
-            if ($team->getName() === $name) {
-                return $team;
-            }
-        }
-        return null;
-    }
-
-    public function getTeams(): array
-    {
-        return $this->teams;
-    }
-
-    /**
-     * This is called every server tick.
-     */
-    abstract public function tick(): void;
 }
