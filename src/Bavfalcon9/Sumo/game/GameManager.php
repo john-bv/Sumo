@@ -74,7 +74,7 @@ class GameManager
     public function registerGame(BaseGame $game): int
     {
         $this->plugin->getServer()->getPluginManager()->registerEvents($game, $this->plugin);
-        $game->setId($id = (mt_rand(100, 999) + $this->games));
+        $game->setId($id = (mt_rand(100, 999) + count($this->games)));
         $this->games[] = $game;
         return $id;
     }
