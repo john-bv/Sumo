@@ -11,7 +11,7 @@ use pocketmine\utils\TextFormat as TF;
 
 class Main extends PluginBase
 {
-    public const NAME = TF::DARK_GRAY."[".TF::RED."SUMO".TF::DARK_GRAY."] " . TF::GRAY;
+    public const NAME = TF::DARK_GRAY . "[" . TF::RED . "SUMO" . TF::DARK_GRAY . "] " . TF::GRAY;
     /** @var GameManager */
     public $gameManager;
     /** @var Position */
