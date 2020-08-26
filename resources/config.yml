@@ -1,10 +1,18 @@
+# The "Hub" keyword is reserved for teleporting players after a Sumo event ends.
+# This key is required for the plugin to function properly.
+Hub:
+  # World name
+  world: hub
+  # Spawn
+  spawn: { x: 0, y: 0, z: 0 }
+
 SampleGame:
   # The name of the world
   world: worldname
   # The Y level for a player to die
   deathY: 50
-  # The amount of players required for the game to start
-  players: 10
+  # The maximum amount of players  for the game
+  players: -1
   # The amount of time for each match (minutes)
   time: 2
   # Whether or not the plugin should protect the world

@@ -5,7 +5,7 @@ namespace Bavfalcon9\Sumo\game\sumo;
 use Bavfalcon9\Sumo\Main;
 use Bavfalcon9\Sumo\game\BaseGame;
 use Bavfalcon9\Sumo\game\match\MatchTask;
-use pocketmine\event\Listener;
+use pocketmine\Player;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\level\Position;
 use pocketmine\scheduler\Task;
@@ -32,19 +32,29 @@ class SumoGame extends BaseGame
         $this->pos1 = $pos1;
         $this->pos2 = $pos2;
         $this->spawn = $spawn;
+        // The array of players that will eventually play.
         $this->contestants = [];
+        // The array of players currently fighting.
         $this->currentMatch = [];
         $this->matchTask = null;
     }
 
-    public function start(): void
+    /**
+     * Starts the sumo game.
+     * @return bool - Whether or not the game successfully started
+     */
+    public function start(): bool
     {
-        if (count($this->getOnlinePlayers()))
+        if (count($this->getOnlinePlayers()) < 2) {
+            return false;
+        }
         foreach ($this->getOnlinePlayers() as $player) {
             // Teleport the player to the spectator position
             $player->teleport($this->spawn);
         }
         $this->startMatch();
+        $this->running = true;
+        return true;
     }
 
     public function startMatch(): void
@@ -101,10 +111,19 @@ class SumoGame extends BaseGame
      */
     public function stop(): bool
     {
+        if (!is_null($this->matchTask)) {
+            $this->matchTask->cancel();
+            foreach ($this->getCurrentPlayersOnline() as $player) {
+                $player->teleport($this->plugin->hubSpawn);
+            }
+        }
         if (!$this->running) {
             // TODO Get spawn from config and tp all in game there.
+            return true;
         } else {
             // TODO Determine the winner and tp everyone to spawn
+            $this->running = false;
+            return true;
         }
     }
 
