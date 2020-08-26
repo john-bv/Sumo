@@ -4,7 +4,7 @@ Hub:
   # World name
   world: hub
   # Spawn
-  spawn: { x: 0, y: 0, z: 0 }
+  spawn: { x: 0, "y": 0, z: 0 }
 
 SampleGame:
   # The name of the world
@@ -30,6 +30,6 @@ SampleGame:
   spawns:
     # The positions for the players to spawn
     # This only accepts 2 array elements.
-    players: [{ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0}]
+    players: [{ x: 0, "y": 0, z: 0 }, { x: 0, "y": 0, z: 0}]
     # The position for spectators to spawn.
-    spectator: { x: 0, y: 0, z: 0 }
+    spectator: { x: 0, "y": 0, z: 0 }
