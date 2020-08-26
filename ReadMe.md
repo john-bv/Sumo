@@ -3,4 +3,4 @@ I spent days trying to figure out how i wanted to structure this because I was t
 
 # To Do
 - Replace the hard written errors with a `messages.yml`
-- Bind the listener to the game itself.
+- Make subcommands (maybe)
