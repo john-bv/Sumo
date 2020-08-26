@@ -5,6 +5,7 @@ namespace Bavfalcon9\Sumo\game\sumo;
 use Bavfalcon9\Sumo\Main;
 use Bavfalcon9\Sumo\game\BaseGame;
 use Bavfalcon9\Sumo\game\match\MatchTask;
+use Bavfalcon9\Sumo\Map;
 use pocketmine\Player;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\level\Position;
@@ -26,17 +27,18 @@ class SumoGame extends BaseGame
     /** @var TaskHandler|null */
     private $matchTask;
 
-    public function __construct(Main $plugin, Position $pos1, Position $pos2, Position $spawn, int $maxPlayers = 50)
+    public function __construct(Main $plugin, Map $map)
     {
-        parent::__construct($plugin, $maxPlayers);
-        $this->pos1 = $pos1;
-        $this->pos2 = $pos2;
-        $this->spawn = $spawn;
+        parent::__construct($plugin, $map, $map->getMaxPlayers() ?? 50);
+        $this->pos1 = $map->getPlayerSpawns()[0];
+        $this->pos2 = $map->getPlayerSpawns()[1];
+        $this->spawn = $map->getSpectatorSpawn();
         // The array of players that will eventually play.
         $this->contestants = [];
         // The array of players currently fighting.
         $this->currentMatch = [];
         $this->matchTask = null;
+        // TODO Wait task
     }
 
     /**

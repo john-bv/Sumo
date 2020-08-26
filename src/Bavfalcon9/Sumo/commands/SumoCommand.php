@@ -19,55 +19,68 @@ class SumoCommand extends Command
     {
         parent::__construct(
             'sumo',
-            'Start/Manage a Sumo Match',
-            '/sumo <start/join/restart/end/list/maplist> [name/id]'
+            'Sumo Matches',
+            '/sumo <join/leave/list> [id]'
         );
         $this->plugin = $plugin;
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args): void
     {
+        if (!$sender->hasPermission('sumo.command')) {
+            $sender->sendMessage(TF::RED . "You are missing permissions to use this command.");
+            return;
+        }
         if (count($args) <= 0) {
             $sender->sendMessage(TF::RED . $this->usageMessage);
             return;
         }
         if ($args[0] === 'list') {
+            $games = $this->plugin->gameManager->getGames();
+            $sender->sendMessage(TF::DARK_GRAY . "===" . Main::NAME . " Current games " . TF::DARK_GRAY . "===" );
+            foreach ($games as $game) {
+                $map = $game->getMap();
+                $sender->sendMessage(TF::GRAY . "" . $map->getName() . ":");
+                $sender->sendMessage(" " . TF::GRAY . "Id" . TF::DARK_GRAY . ": " . TF::GRAY . $game->getId());
+                $sender->sendMessage(" " . TF::GRAY . "Players" . TF::DARK_GRAY . ": " . TF::GRAY . $game->getPlayerCount());
+                $sender->sendMessage(
+                    " " . TF::GRAY . "Can Join" . TF::DARK_GRAY . ": " . (($game->canJoin()) ? TF::GREEN . "Yes" : TF::RED . "No")
+                );
+            }
             return;
         }
-        if (count($args) < 1) {
-            $sender->sendMessage(TF::RED . $this->usageMessage);
-            return;
-        }
-        if ($args[0] === 'start') {
-            $maps = array_keys($this->plugin->getMaps());
-            if (!in_array($args[0], $maps)) {
-                $sender->sendMessage(TF::RED . "The map you requested is not loaded.");
+        if ($args[0] === 'leave') {
+            if (is_null($game = $this->plugin->gameManager->getGameFromPlayer($sender->getName()))) {
+                $sender->sendMessage(Main::NAME . TF::RED . "You are not playing any games.");
                 return;
             }
-            if ($this->plugin->gameManager->isPlaying($sender->getName())) {
-                $sender->sendMessage(TF::RED . "You can not start a sumo match while playing.");
+            $game->removePlayer($sender->getName());
+            $sender->sendMessage(Main::NAME . "You left game: " . $game->getId());
+            return;
+        }
+        if ($args[0] === 'join') {
+            if (!isset($args[1])) {
+                $sender->sendMessage(Main::NAME . TF::RED . "You must provide a match id.");
                 return;
             }
-            $map = $this->plugin->getMaps()[$args[0]];
-            $game = new SumoGame(
-                $this->plugin,
-                $map->getPlayerSpawns()[0],
-                $map->getPlayerSpawns()[1],
-                $map->getSpectatorSpawn(),
-                $map->getMaxPlayers()
-            );
-            $id = $this->plugin->gameManager->registerGame($game);
-            $this->plugin->getServer()->broadcastMessage(
-                Main::NAME."A new game with map \"$args[0]\" has start with id: $id! Join with /sumo join $id"
-            );
+            if (!is_null($game = $this->plugin->gameManager->getGameFromPlayer($sender->getName()))) {
+                $sender->sendMessage(Main::NAME . TF::RED . "You are already playing in: " . $game->getId());
+                return;
+            }
+            if (is_null($game = $this->plugin->gameManager->getGame((int) $args[1]))) {
+                $sender->sendMessage(Main::NAME . TF::RED . "Could not find that match.");
+                return;
+            }
+            if (!$game->canJoin()) {
+                $sender->sendMessage(Main::NAME . TF::RED . "This game is full.");
+                return;
+            }
+            $game->addPlayer($sender->getName());
+            $sender->sendMessage(Main::NAME . "You joined game: " . $game->getId());
             return;
         }
-        if ($args[0] === 'restart') {
-            return;
-        }
-        if ($args[0] === 'end') {
-            return;
-        }
+        $sender->sendMessage(Main::NAME . "Invalid usage.");
+        return;
     }
 
     public function getPlugin(): Pluginbase {

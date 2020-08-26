@@ -3,6 +3,7 @@
 namespace Bavfalcon9\Sumo\game;
 
 use Bavfalcon9\Sumo\Main;
+use Bavfalcon9\Sumo\Map;
 use pocketmine\Player;
 use pocketmine\event\Listener;
 
@@ -10,6 +11,8 @@ class BaseGame implements Listener
 {
     /** @var Main */
     protected $plugin;
+    /** @var Map */
+    protected $map;
     /** @var string[] */
     protected $players;
     /** @var int */
@@ -19,9 +22,10 @@ class BaseGame implements Listener
     /** @var int */
     private $id;
 
-    public function __construct(Main $plugin, int $maxPlayers)
+    public function __construct(Main $plugin, Map $map, int $maxPlayers)
     {
         $this->plugin = $plugin;
+        $this->map = $map;
         $this->players = [];
         $this->maxPlayers = $maxPlayers;
         $this->running = false;
@@ -52,7 +56,7 @@ class BaseGame implements Listener
      */
     public function addPlayer(string $player): void
     {
-        if (!$this->hasPlayer($player)) return;
+        if ($this->hasPlayer($player)) return;
         $this->players[] = $player;
     }
 
@@ -73,7 +77,7 @@ class BaseGame implements Listener
      */
     public function hasPlayer(string $player): bool
     {
-        return isset($this->players[$player]);
+        return in_array($player, $this->players);
     }
 
     /**
@@ -151,5 +155,10 @@ class BaseGame implements Listener
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getMap(): Map
+    {
+        return $this->map;
     }
 }

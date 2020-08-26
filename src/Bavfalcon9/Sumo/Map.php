@@ -29,24 +29,25 @@ class Map
      * @param Main $plugin
      * @param string $name
      * @param array $mapData
-     * @return Map|MapException
+     * @throws MapException
+     * @return Map
      */
     public static function fromSave(Main $plugin, string $name, array $mapData): Map {
-        $validMapKeys = explode(";", "world;deathY;players;time;protection;spawns");
+        $validMapKeys = ["world", "deathY", "players", "time", "protection", "spawns"];
         foreach ($validMapKeys as $key) {
-            if (!in_array($key, array_keys($mapData))) {
-                return new MapException("$name is missing key: \"$key\"");
+            if (!isset($mapData[$key])) {
+                throw new MapException("$name is missing key: \"$key\"");
             }
         }
         if (is_null($plugin->getServer()->getLevelByName($mapData['world']))) {
             if (!$plugin->getServer()->loadLevel($mapData['world'])) {
-                return new MapException("$name Failed to load because the provided world for this match does not exist.");
+                throw new MapException("$name Failed to load because the provided world for this match does not exist.");
             }
         }
         $level = $plugin->getServer()->getLevelByName($mapData['world']);
         $playerSpawns = [];
         if (!isset($mapData['spawns']['spectator']) || !isset($mapData['spawns']['players'])) {
-            return new MapException("$name Failed to load because one of spawnpoints: \"players\", \"spectator\" do not exist.");
+            throw new MapException("$name Failed to load because one of spawnpoints: \"players\", \"spectator\" do not exist.");
         }
         foreach ($mapData['spawns']['players'] as $id=>$spawn) {
             $playerSpawns[] = $plugin->getPosition($spawn, $level);

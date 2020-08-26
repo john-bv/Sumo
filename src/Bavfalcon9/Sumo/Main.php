@@ -2,10 +2,14 @@
 
 namespace Bavfalcon9\Sumo;
 
+use Bavfalcon9\Sumo\commands\SumoAdminCommand;
+use Bavfalcon9\Sumo\commands\SumoCommand;
 use Bavfalcon9\Sumo\game\GameManager;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
+use pocketmine\permission\Permission;
+use pocketmine\permission\PermissionManager;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat as TF;
 
@@ -25,6 +29,16 @@ class Main extends PluginBase
         $this->gameManager = new GameManager($this);
         $this->maps = [];
         $this->loadMatches();
+        PermissionManager::getInstance()->addPermission(
+            new Permission('sumo.command', 'Allow access to sumo default commands', Permission::DEFAULT_TRUE)
+        );
+        PermissionManager::getInstance()->addPermission(
+            new Permission('sumo.admin', 'Allow access to sumo admin commands', Permission::DEFAULT_OP)
+        );
+        $this->getserver()->getCommandMap()->registerAll('sumo', [
+            new SumoCommand($this),
+            new SumoAdminCommand($this)
+        ]);
     }
 
     public function onDisable(): void
@@ -45,20 +59,16 @@ class Main extends PluginBase
 
     /**
      * Gets a position from a array of coordinates
-     * @param int[] $key
+     * @param int[] $spawns
      * @param Level $level
      * @return Vector3|null
      */
-    public function getPosition(array $key, Level $level): ?Position
+    public function getPosition(array $spawns, Level $level): ?Position
     {
-        $xyz = explode('', 'xyz');
-        // Integrity check
-        foreach ($xyz as $pos) {
-            if (!isset($key[$pos])) {
-                return null;
-            }
+        if (!isset($spawns['x']) || !isset($spawns['y']) || !isset($spawns['z'])) {
+            return null;
         }
-        return new Position($key['x'], $key['y'], $key['z'], $level);
+        return new Position($spawns['x'], $spawns['y'], $spawns['z'], $level);
     }
 
     /**
@@ -105,7 +115,7 @@ class Main extends PluginBase
     private function loadMatches(): void
     {
         if (!$this->loadHub()) return;
-        $maps = $this->getConfig()->getAll(true);
+        $maps = $this->getConfig()->getAll();
         foreach ($maps as $mapName=>$mapData) {
             if ($mapName === 'Hub') {
                 continue;
@@ -113,6 +123,7 @@ class Main extends PluginBase
             try {
                 $map = Map::fromSave($this, $mapName, $mapData);
                 $this->maps[$mapName] = $map;
+                $this->getLogger()->debug("Sumo map: " . $mapName . " loaded successfully.");
             } catch (\Throwable $exception) {
                 $this->getLogger()->error($exception->getMessage());
             }
